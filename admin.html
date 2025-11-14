@@ -1,0 +1,819 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin Dashboard — Guidance Plus</title>
+  <style>
+    /* ===========================
+       PROFESSIONAL ADMIN CSS
+       Single-file, responsive
+       =========================== */
+    :root{
+      --bg: #f4f6fb;
+      --card: #ffffff;
+      --muted: #6b7280;
+      --accent: #4c3fff;
+      --accent-2: #7b61ff;
+      --success: #16a34a;
+      --danger: #ef4444;
+      --glass: rgba(255,255,255,0.9);
+      --shadow: 0 8px 30px rgba(2,6,23,0.06);
+      --radius: 12px;
+      --mono: "Inter", Poppins, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;padding:0}
+    body{
+      font-family: var(--mono);
+      background: linear-gradient(180deg,#eef2ff 0%, #f7fafc 100%);
+      color:#0f172a;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      padding:20px;
+    }
+
+    /* NAVBAR */
+    .navbar{
+      display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-radius:var(--radius);
+      background:var(--card);box-shadow:var(--shadow);position:sticky;top:12px;z-index:40;
+    }
+    .brand{display:flex;align-items:center;gap:12px;font-weight:700;font-size:18px;color:#0f172a;}
+    .logo{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;color:white;font-weight:700}
+    .navbar-controls{display:flex;align-items:center;gap:10px}
+    .btn{background:var(--accent);color:white;border:0;padding:8px 14px;border-radius:10px;font-weight:600;cursor:pointer}
+    .btn-ghost{background:transparent;border:1px solid rgba(99,102,241,0.12);padding:8px 12px;border-radius:8px;cursor:pointer}
+    .logout-btn{background:var(--danger);color:white;border:0;padding:8px 12px;border-radius:10px;cursor:pointer}
+    .notif-dot{width:12px;height:12px;border-radius:50%;background:#ff3b30;box-shadow:0 0 0 4px rgba(255,59,48,0.08);display:inline-block}
+
+    /* Container & Stats */
+    .container{width:100%;max-width:1360px;margin:18px auto;}
+    .stats-row{display:flex;gap:12px;margin:18px 0}
+    .stat{flex:1;padding:14px;border-radius:10px;background:linear-gradient(180deg,#fff,#f3f6ff);text-align:center;box-shadow:0 6px 18px rgba(12,18,60,0.04)}
+    .stat h4{font-size:13px;color:var(--muted);margin-bottom:8px}
+    .stat h2{font-size:20px;color:#0f172a;margin:4px 0}
+
+    /* Grid layout */
+    .grid{display:grid;grid-template-columns:1fr 420px;gap:20px}
+    @media (max-width:1000px){ .grid{grid-template-columns:1fr} }
+
+    .card{background:var(--card);padding:16px;border-radius:12px;box-shadow:var(--shadow);}
+
+    h3{margin:0 0 12px 0;font-size:16px}
+    .subtle{color:var(--muted);font-size:13px}
+
+    /* Inputs */
+    .input{width:100%;padding:10px;margin:6px 0;border-radius:10px;border:1px solid #e6e9f2;background:#fbfdff}
+    .textarea{min-height:80px;resize:vertical;padding:10px;border-radius:10px;border:1px solid #e6e9f2;background:#fbfdff}
+
+    /* Users list */
+    .user-row{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #f1f3f8;padding:12px 0}
+    .flex-row{display:flex;gap:8px;align-items:center}
+    .small-btn{background:var(--accent);color:white;border:0;padding:6px 10px;border-radius:8px;cursor:pointer;font-size:13px}
+    .approve-btn{background:var(--success);color:white;border:0;padding:6px 10px;border-radius:8px;cursor:pointer}
+    .delete-btn{background:var(--danger);color:white;border:0;padding:6px 10px;border-radius:8px;cursor:pointer}
+
+    /* Courses */
+    .course-card{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid #f1f3f8}
+    .course-meta b{display:block;margin-bottom:6px}
+    .link{color:var(--accent);text-decoration:none;font-weight:600}
+
+    /* Chat */
+    .chat-list{max-height:280px;overflow:auto}
+    .chat-contact{display:flex;justify-content:space-between;align-items:center;padding:12px;border-radius:8px;border:1px solid #f1f5f9;margin-bottom:8px;cursor:pointer}
+    .chat-contact:hover{background:#fbfdff}
+    .chat-box{position:fixed;right:20px;bottom:20px;width:360px;background:var(--card);padding:12px;border-radius:12px;box-shadow:0 20px 56px rgba(2,6,23,0.12);display:none;z-index:80}
+    .messages{height:300px;overflow:auto;padding:8px;border-radius:10px;background:#f6f8ff;border:1px solid #eef1ff;margin-bottom:8px}
+    .msg{margin-bottom:10px;display:block;max-width:85%}
+    .msg.admin{align-self:flex-end;text-align:right}
+    .bubble{display:inline-block;padding:8px 12px;border-radius:12px}
+    .msg.admin .bubble{background:var(--accent);color:white}
+    .msg.agent .bubble{background:#eef2ff;color:#111}
+
+    /* Activity */
+    #activityLog{max-height:320px;overflow:auto}
+
+    /* Resources UI */
+    .resources-tabs{display:flex;gap:8px;margin-bottom:12px}
+    .tab{padding:8px 12px;border-radius:10px;background:#fbfdff;border:1px solid #eef1ff;cursor:pointer}
+    .tab.active{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:white;border:0}
+    .resource-row{display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:8px;border:1px solid #f1f3f8;margin-bottom:8px;gap:10px}
+    .resource-thumb{max-width:120px;max-height:80px;border-radius:6px;object-fit:cover;border:1px solid #eef1ff}
+
+    /* small helpers */
+    .muted{color:var(--muted)}
+    .tiny{font-size:12px}
+    .right{text-align:right}
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <div class="navbar">
+    <div class="brand"><div class="logo">GP</div>Guidance Plus — Admin</div>
+    <div class="navbar-controls">
+      <div id="notifContainer" style="display:flex;align-items:center;gap:8px;">
+        <span id="notifDot" class="notif-dot" style="display:none" title="You have notifications"></span>
+      </div>
+      <button class="btn-ghost" onclick="openProfile()">Profile</button>
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="container">
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="stat card">
+        <h4>Total Users</h4>
+        <h2 id="totalUsers">0</h2>
+      </div>
+      <div class="stat card">
+        <h4>Approved Agents</h4>
+        <h2 id="approvedAgents">0</h2>
+      </div>
+      <div class="stat card">
+        <h4>Total Courses</h4>
+        <h2 id="totalCourses">0</h2>
+      </div>
+    </div>
+
+    <div class="grid">
+      <!-- LEFT -->
+      <div>
+        <!-- Manage Users -->
+        <div class="card">
+          <h3>Manage Users</h3>
+          <input id="searchUser" class="input" placeholder="Search Users..." onkeyup="searchUsers()">
+          <div id="userList" style="margin-top:8px"></div>
+        </div>
+
+        <!-- Agent Requests -->
+        <div class="card" style="margin-top:14px">
+          <h3>Agent Requests</h3>
+          <div id="agentRequestList"><p class="subtle">No requests yet.</p></div>
+        </div>
+
+        <!-- Courses -->
+        <div class="card" style="margin-top:14px">
+          <h3 id="courseFormTitle">Add Course</h3>
+          <input id="title" class="input" placeholder="Course Title">
+          <input id="course" class="input" placeholder="Course Name">
+          <input id="link" class="input" placeholder="Course Link (https://...)">
+          <input id="category" class="input" placeholder="Category (e.g., AI / Web / Data)">
+          <textarea id="reference_book" class="input textarea" placeholder="Reference Book"></textarea>
+
+          <div style="display:flex;gap:8px;margin-top:8px;">
+            <button id="addCourseBtn" class="btn" onclick="addCourse()">Add Course</button>
+            <button class="btn-ghost" onclick="clearCourseForm()">Clear</button>
+            <button class="btn-ghost" onclick="exportCourses()">Export CSV</button>
+          </div>
+        </div>
+
+        <!-- All Courses -->
+        <div class="card" style="margin-top:14px">
+          <h3>All Courses</h3>
+          <input id="searchCourse" class="input" placeholder="Search Courses..." onkeyup="searchCourses()">
+          <div id="courseList" style="margin-top:8px"></div>
+        </div>
+      </div>
+
+      <!-- RIGHT -->
+      <div style="display:flex;flex-direction:column;gap:16px">
+
+        <!-- Agents & Chats -->
+        <div class="card">
+          <h3>Agents & Chats</h3>
+          <div style="margin-bottom:8px;">
+            <input id="searchAgentChat" class="input" placeholder="Search agents..." onkeyup="filterChatList()">
+          </div>
+          <div id="chatList" class="chat-list"></div>
+          <div style="display:flex;gap:8px;margin-top:10px;">
+            <button class="btn" onclick="broadcastTest()">Simulate Agent Message</button>
+            <button class="btn-ghost" onclick="renderChatList()">Refresh</button>
+          </div>
+        </div>
+
+        <!-- Resources (images / pdfs / links) -->
+        <div class="card">
+          <h3>Resources</h3>
+          <div class="resources-tabs" id="resourcesTabs">
+            <div class="tab active" data-tab="images" onclick="switchResourcesTab('images')">Images</div>
+            <div class="tab" data-tab="pdfs" onclick="switchResourcesTab('pdfs')">PDFs</div>
+            <div class="tab" data-tab="links" onclick="switchResourcesTab('links')">Links</div>
+          </div>
+
+          <!-- Images -->
+          <div id="res_images" class="res-panel">
+            <input id="resourceImageTitle" class="input" placeholder="Image title">
+            <input id="resourceImageFile" type="file" accept="image/*" class="input" style="padding:10px;">
+            <div style="display:flex;gap:8px;margin-top:8px;">
+              <button class="btn" onclick="addImageResource()">Add Image</button>
+              <button class="btn-ghost" onclick="clearImageForm()">Clear</button>
+            </div>
+            <div style="margin-top:12px"><h4 style="margin:6px 0;font-size:14px">Saved Images</h4>
+              <div id="imageList" style="max-height:220px;overflow:auto"></div>
+            </div>
+          </div>
+
+          <!-- PDFs -->
+          <div id="res_pdfs" class="res-panel" style="display:none;">
+            <input id="resourcePdfTitle" class="input" placeholder="PDF title">
+            <input id="resourcePdfFile" type="file" accept="application/pdf" class="input" style="padding:10px;">
+            <div style="display:flex;gap:8px;margin-top:8px;">
+              <button class="btn" onclick="addPdfResource()">Add PDF</button>
+              <button class="btn-ghost" onclick="clearPdfForm()">Clear</button>
+            </div>
+            <div style="margin-top:12px"><h4 style="margin:6px 0;font-size:14px">Saved PDFs</h4>
+              <div id="pdfList" style="max-height:220px;overflow:auto"></div>
+            </div>
+          </div>
+
+          <!-- Links -->
+          <div id="res_links" class="res-panel" style="display:none;">
+            <input id="resourceLinkTitle" class="input" placeholder="Link title">
+            <input id="resourceLinkUrl" class="input" placeholder="https://example.com/resource">
+            <div style="display:flex;gap:8px;margin-top:8px;">
+              <button class="btn" onclick="addLinkResource()">Add Link</button>
+              <button class="btn-ghost" onclick="clearLinkForm()">Clear</button>
+            </div>
+            <div style="margin-top:12px"><h4 style="margin:6px 0;font-size:14px">Saved Links</h4>
+              <div id="linkList" style="max-height:220px;overflow:auto"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Activity -->
+        <div class="card">
+          <h3>Activity Log</h3>
+          <div id="activityLog"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Chat Box -->
+  <div id="chatBox" class="chat-box" aria-hidden="true">
+    <h4 id="chatUserTitle">Chat</h4>
+    <div id="chatMessages" class="messages"></div>
+    <div style="display:flex;gap:8px;">
+      <input id="chatInput" class="input" placeholder="Type a message..." style="flex:1;padding:8px;">
+      <button class="btn" onclick="sendChat()">Send</button>
+      <button class="btn-ghost" onclick="closeChat()">Close</button>
+    </div>
+  </div>
+
+  <!-- Profile Modal -->
+  <div id="profileBox" style="display:none;position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:520px;background:var(--card);padding:18px;border-radius:12px;box-shadow:0 20px 60px rgba(2,6,23,0.12);z-index:90">
+    <h3>Admin Profile</h3>
+    <div style="display:flex;gap:8px;margin-bottom:8px;">
+      <input id="p_name" class="input" placeholder="Name" style="flex:1">
+      <input id="p_email" class="input" placeholder="Email" style="flex:1">
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:8px;">
+      <input id="p_phone" class="input" placeholder="Phone" style="flex:1">
+      <input id="p_role" class="input" placeholder="Role (Admin)" style="flex:1">
+    </div>
+    <textarea id="p_bio" class="input textarea" placeholder="Bio"></textarea>
+    <div style="display:flex;gap:8px;margin-top:8px;">
+      <button class="btn" onclick="saveProfile()">Save</button>
+      <button class="delete-btn" onclick="closeProfile()">Close</button>
+    </div>
+  </div>
+
+<script>
+/* =========================
+   Utilities & Seed demo data
+   ========================= */
+function nowISO(){ return new Date().toISOString(); }
+function escapeHtml(s){ if(s===null||s===undefined) return ""; return String(s).replace(/[&<>"']/g, function(m){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]); }); }
+function logActivity(text){
+  const logs = JSON.parse(localStorage.getItem("activity")||"[]");
+  logs.unshift({text, time: nowISO()});
+  if(logs.length>600) logs.length=600;
+  localStorage.setItem("activity", JSON.stringify(logs));
+  renderActivity();
+}
+
+/* Seed demo data once (safe: only runs if not initialized) */
+(function seed(){
+  if(localStorage.getItem("initialized_demo_full")) return;
+  const users = [
+    { username:"admin", role:"Admin", status:"approved", password:"admin123", email:"admin@example.com" },
+    { username:"agent_beth", role:"Agent", status:"approved", password:"agent123", email:"beth@example.com" },
+    { username:"agent_alex", role:"Agent", status:"pending", password:"agent123", email:"alex@example.com" },
+    { username:"student_charlie", role:"Student", status:"approved", password:"stud123", email:"charlie@example.com" }
+  ];
+  const courses = [
+    { title:"Intro to Python", course:"Python Basics", link:"https://example.com/python", reference_book:"Automate the Boring Stuff", category:"Programming" },
+    { title:"ML Foundations", course:"Machine Learning", link:"https://example.com/ml", reference_book:"Hands-On ML", category:"AI" }
+  ];
+  const chat = [
+    { from:"agent_beth", to:"Admin", text:"Hello Admin!", time:Date.now()-60000, read:false },
+    { from:"Admin", to:"agent_beth", text:"Hi Beth — how can I help?", time:Date.now()-50000, read:true }
+  ];
+  localStorage.setItem("users", JSON.stringify(users));
+  localStorage.setItem("courses", JSON.stringify(courses));
+  localStorage.setItem("chat", JSON.stringify(chat));
+  localStorage.setItem("activity", JSON.stringify([{text:"Initialized demo data", time:nowISO()}]));
+  localStorage.setItem("resources_images", JSON.stringify([]));
+  localStorage.setItem("resources_pdfs", JSON.stringify([]));
+  localStorage.setItem("resources_links", JSON.stringify([]));
+  localStorage.setItem("initialized_demo_full","1");
+})();
+
+/* =========================
+   Users helpers
+   ========================= */
+function getUsers(){ return JSON.parse(localStorage.getItem("users")||"[]"); }
+function saveUsers(u){ localStorage.setItem("users", JSON.stringify(u)); }
+function findUserIndexByUsername(username){ return getUsers().findIndex(x=>x.username===username); }
+
+function loadUsers(){
+  const users = getUsers();
+  const box = document.getElementById("userList");
+  box.innerHTML = "";
+  users.forEach(u=>{
+    const chatBtn = (u.role==="Agent" && u.status==="approved") ? `<button class="small-btn" onclick="openChat('${u.username}')">Chat</button>` : "";
+    // Approve button in Manage Users: will now approve generic users and convert RequestedAgent correctly
+    const approveBtn = u.status==="pending" ? `<button class="approve-btn" onclick="approveUserByName('${u.username}')">Approve</button>` : "";
+    const requestBtn = (u.role === "Student") ? `<button class="btn-ghost" onclick="requestAgentAccess('${u.username}')">Request Agent</button>` : "";
+    box.innerHTML += `
+      <div class="user-row">
+        <div>
+          <strong>${escapeHtml(u.username)}</strong> <span class="subtle">(${escapeHtml(u.role)})</span><br>
+          <small class="subtle">Status: ${escapeHtml(u.status)}</small>
+        </div>
+        <div class="flex-row">
+          ${chatBtn}
+          <button class="btn-ghost" onclick="viewUser('${u.username}')">View</button>
+          <button class="delete-btn" onclick="deleteUser('${u.username}')">Delete</button>
+          ${requestBtn}
+          ${approveBtn}
+        </div>
+      </div>`;
+  });
+  updateStats();
+  loadAgentDropdown();
+  renderChatList();
+  checkNotifications();
+}
+
+/* Approve (Manage Users) - fixed: respects RequestedAgent => becomes Agent */
+function approveUserByName(username){
+  const users = getUsers();
+  const i = findUserIndexByUsername(username);
+  if(i === -1) return alert("User not found");
+  // Mark approved
+  users[i].status = "approved";
+  // If they requested agent role, convert to Agent
+  if(users[i].role === "RequestedAgent") users[i].role = "Agent";
+  saveUsers(users);
+  logActivity(`Approved user ${username}`);
+  loadUsers();
+  loadAgentRequests();
+  updateStats();
+}
+
+/* Delete / View / Search */
+function deleteUser(username){
+  if(!confirm("Delete user?")) return;
+  const users=getUsers(); const i=findUserIndexByUsername(username);
+  if(i===-1) return; const name=users[i].username; users.splice(i,1); saveUsers(users);
+  logActivity(`Deleted user ${name}`); loadUsers();
+}
+function viewUser(username){
+  const users=getUsers(); const i=findUserIndexByUsername(username);
+  if(i===-1) return alert("User not found");
+  const u=users[i]; alert(`User: ${u.username}\nRole: ${u.role}\nStatus: ${u.status}\nEmail: ${u.email || 'N/A'}`);
+}
+function searchUsers(){
+  const q=(document.getElementById("searchUser")||{}).value.toLowerCase()||"";
+  const users=getUsers(); const box=document.getElementById("userList"); box.innerHTML="";
+  users.filter(u=>`${u.username} ${u.role} ${u.status}`.toLowerCase().includes(q)).forEach(u=>{
+    const chatBtn = (u.role==="Agent" && u.status==="approved") ? `<button class="small-btn" onclick="openChat('${u.username}')">Chat</button>` : "";
+    const approveBtn = u.status==="pending" ? `<button class="approve-btn" onclick="approveUserByName('${u.username}')">Approve</button>` : "";
+    const requestBtn = (u.role === "Student") ? `<button class="btn-ghost" onclick="requestAgentAccess('${u.username}')">Request Agent</button>` : "";
+    box.innerHTML += `
+      <div class="user-row">
+        <div>
+          <strong>${escapeHtml(u.username)}</strong> <span class="subtle">(${escapeHtml(u.role)})</span><br>
+          <small class="subtle">Status: ${escapeHtml(u.status)}</small>
+        </div>
+        <div class="flex-row">
+          ${chatBtn}
+          <button class="btn-ghost" onclick="viewUser('${u.username}')">View</button>
+          <button class="delete-btn" onclick="deleteUser('${u.username}')">Delete</button>
+          ${requestBtn}
+          ${approveBtn}
+        </div>
+      </div>`;
+  });
+}
+
+/* =========================
+   Agent Requests (Admin)
+   ========================= */
+function loadAgentRequests(){
+  const users=getUsers(); const box=document.getElementById("agentRequestList");
+  const requests=users.filter(u=>u.role==="RequestedAgent");
+  if(requests.length===0){ box.innerHTML="<p class='subtle'>No requests yet.</p>"; return; }
+  box.innerHTML="";
+  requests.forEach(u=>{
+    box.innerHTML += `
+      <div class="user-row">
+        <div><strong>${escapeHtml(u.username)}</strong><br><small class="subtle">Requested to become Agent</small></div>
+        <div class="flex-row">
+          <button class="approve-btn" onclick="approveAgent('${u.username}')">Approve</button>
+          <button class="delete-btn" onclick="rejectAgent('${u.username}')">Reject</button>
+        </div>
+      </div>`;
+  });
+}
+function approveAgent(username){
+  const users=getUsers(); const i=findUserIndexByUsername(username);
+  if(i===-1) return alert("User not found");
+  users[i].role="Agent"; users[i].status="approved"; saveUsers(users);
+  logActivity(`Approved agent request: ${username}`); loadAgentRequests(); loadUsers(); loadAgentDropdown(); updateStats();
+}
+function rejectAgent(username){
+  const users=getUsers(); const i=findUserIndexByUsername(username);
+  if(i===-1) return alert("User not found");
+  users[i].role="Student"; users[i].status="approved"; saveUsers(users);
+  logActivity(`Rejected agent request: ${username}`); loadAgentRequests(); loadUsers(); updateStats();
+}
+function requestAgentAccess(username){
+  const users=getUsers(); const i=findUserIndexByUsername(username);
+  if(i===-1) return alert("User not found"); if(users[i].role==="Agent") return alert("User is already an Agent");
+  users[i].role="RequestedAgent"; users[i].status="pending"; saveUsers(users);
+  logActivity(`${username} requested Agent access`); loadAgentRequests(); loadUsers(); checkNotifications();
+  alert("Agent request submitted (admin will review).");
+}
+
+/* =========================
+   Courses (CRUD + export)
+   ========================= */
+function getCourses(){ return JSON.parse(localStorage.getItem("courses")||"[]"); }
+function saveCourses(c){ localStorage.setItem("courses", JSON.stringify(c)); }
+
+function addCourse(){
+  const title=(document.getElementById("title")||{}).value.trim();
+  const course=(document.getElementById("course")||{}).value.trim();
+  const link=(document.getElementById("link")||{}).value.trim();
+  const category=(document.getElementById("category")||{}).value.trim();
+  const reference_book=(document.getElementById("reference_book")||{}).value.trim();
+  if(!title || !course || !link || !reference_book) return alert("Please fill Title, Course, Link and Reference Book");
+  const courses=getCourses(); const editIndex=localStorage.getItem("editCourseIndex");
+  if(editIndex!==null && editIndex!==undefined){
+    courses[Number(editIndex)] = { title, course, link, category, reference_book };
+    localStorage.removeItem("editCourseIndex");
+    document.getElementById("courseFormTitle").innerText="Add Course"; document.getElementById("addCourseBtn").innerText="Add Course";
+    logActivity(`Updated course "${title}"`); alert("Course updated");
+  } else {
+    courses.unshift({ title, course, link, category, reference_book });
+    logActivity(`Added course "${title}"`); alert("Course added");
+  }
+  saveCourses(courses); clearCourseForm(); loadCourses(); updateStats();
+}
+function clearCourseForm(){
+  (document.getElementById("title")||{}).value=""; (document.getElementById("course")||{}).value="";
+  (document.getElementById("link")||{}).value=""; (document.getElementById("category")||{}).value="";
+  (document.getElementById("reference_book")||{}).value=""; localStorage.removeItem("editCourseIndex");
+}
+function loadCourses(){
+  const courses=getCourses(); const box=document.getElementById("courseList"); box.innerHTML="";
+  if(courses.length===0){ box.innerHTML="<p class='subtle'>No courses added yet.</p>"; return; }
+  courses.forEach((c,idx)=>{
+    box.innerHTML += `
+      <div class="course-card">
+        <div class="course-meta">
+          <b>${escapeHtml(c.title)}</b>
+          <div class="subtle">${escapeHtml(c.course)} • ${escapeHtml(c.category || 'General')}</div>
+          <div class="subtle" style="margin-top:6px">Ref: ${escapeHtml(c.reference_book)}</div>
+          <a href="${escapeHtml(c.link)}" class="link" target="_blank" rel="noreferrer">Open Course</a>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+          <div>
+            <button class="approve-btn" onclick="editCourse(${idx})">Edit</button>
+            <button class="delete-btn" onclick="deleteCourse(${idx})">Delete</button>
+          </div>
+          <small class="subtle">${new Date().toLocaleDateString()}</small>
+        </div>
+      </div>`;
+  });
+}
+function editCourse(index){
+  const courses=getCourses(); if(!courses[index]) return alert("Course not found");
+  const c=courses[index];
+  document.getElementById("title").value=c.title||""; document.getElementById("course").value=c.course||"";
+  document.getElementById("link").value=c.link||""; document.getElementById("category").value=c.category||"";
+  document.getElementById("reference_book").value=c.reference_book||""; localStorage.setItem("editCourseIndex", index);
+  document.getElementById("courseFormTitle").innerText="Edit Course"; document.getElementById("addCourseBtn").innerText="Update Course";
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function deleteCourse(index){
+  const courses=getCourses(); if(!courses[index]) return;
+  if(!confirm(`Delete course "${courses[index].title}"?`)) return;
+  const t=courses[index].title; courses.splice(index,1); saveCourses(courses); logActivity(`Deleted course "${t}"`); loadCourses(); updateStats();
+}
+function searchCourses(){
+  const q=(document.getElementById("searchCourse")||{}).value.toLowerCase()||""; const courses=getCourses(); const box=document.getElementById("courseList"); box.innerHTML="";
+  courses.filter(c=>`${c.title} ${c.course} ${c.category}`.toLowerCase().includes(q)).forEach((c,idx)=>{
+    box.innerHTML += `
+      <div class="course-card">
+        <div class="course-meta">
+          <b>${escapeHtml(c.title)}</b>
+          <div class="subtle">${escapeHtml(c.course)} • ${escapeHtml(c.category || 'General')}</div>
+          <div class="subtle" style="margin-top:6px">Ref: ${escapeHtml(c.reference_book)}</div>
+          <a href="${escapeHtml(c.link)}" target="_blank" class="link" rel="noreferrer">Open Course</a>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+          <div>
+            <button class="approve-btn" onclick="editCourse(${idx})">Edit</button>
+            <button class="delete-btn" onclick="deleteCourse(${idx})">Delete</button>
+          </div>
+        </div>
+      </div>`;
+  });
+}
+function exportCourses(){
+  const courses=getCourses(); if(!courses.length) return alert("No courses to export");
+  const rows=[["Title","Course","Link","Category","Reference Book"], ...courses.map(c=>[c.title,c.course,c.link,c.category||"",c.reference_book])];
+  const csv=rows.map(r=>r.map(cell=>`"${String(cell||"").replace(/"/g,'""')}"`).join(",")).join("\n");
+  const blob=new Blob([csv],{type:"text/csv"}); const url=URL.createObjectURL(blob);
+  const a=document.createElement("a"); a.href=url; a.download="courses.csv"; a.click(); URL.revokeObjectURL(url);
+  logActivity("Exported courses to CSV");
+}
+
+/* =========================
+   Resources: images / pdfs / links
+   stored in separate keys: resources_images, resources_pdfs, resources_links
+   ========================= */
+function getImages(){ return JSON.parse(localStorage.getItem("resources_images")||"[]"); }
+function saveImages(arr){ localStorage.setItem("resources_images", JSON.stringify(arr)); }
+function getPdfs(){ return JSON.parse(localStorage.getItem("resources_pdfs")||"[]"); }
+function savePdfs(arr){ localStorage.setItem("resources_pdfs", JSON.stringify(arr)); }
+function getLinks(){ return JSON.parse(localStorage.getItem("resources_links")||"[]"); }
+function saveLinks(arr){ localStorage.setItem("resources_links", JSON.stringify(arr)); }
+
+function renderImages(){
+  const list=getImages(); const box=document.getElementById("imageList"); box.innerHTML="";
+  if(!list.length){ box.innerHTML="<p class='subtle'>No images saved.</p>"; return; }
+  list.forEach(r=>{
+    box.innerHTML += `
+      <div class="resource-row">
+        <div style="display:flex;gap:12px;align-items:center">
+          <img class="resource-thumb" src="${r.data}" alt="${escapeHtml(r.title)}">
+          <div>
+            <div style="font-weight:700">${escapeHtml(r.title)}</div>
+            <div class="subtle tiny">${new Date(r.created).toLocaleString()}</div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+          <a href="${r.data}" target="_blank" rel="noreferrer"><button class="btn-ghost">View</button></a>
+          <button class="delete-btn" onclick="deleteImageResource('${r.id}')">Delete</button>
+        </div>
+      </div>`;
+  });
+}
+function renderPdfs(){
+  const list=getPdfs(); const box=document.getElementById("pdfList"); box.innerHTML="";
+  if(!list.length){ box.innerHTML="<p class='subtle'>No PDFs saved.</p>"; return; }
+  list.forEach(r=>{
+    box.innerHTML += `
+      <div class="resource-row">
+        <div>
+          <div style="font-weight:700">${escapeHtml(r.title)}</div>
+          <div class="subtle tiny">${new Date(r.created).toLocaleString()}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+          <a href="${r.data}" target="_blank" rel="noreferrer"><button class="btn-ghost">Open PDF</button></a>
+          <button class="delete-btn" onclick="deletePdfResource('${r.id}')">Delete</button>
+        </div>
+      </div>`;
+  });
+}
+function renderLinks(){
+  const list=getLinks(); const box=document.getElementById("linkList"); box.innerHTML="";
+  if(!list.length){ box.innerHTML="<p class='subtle'>No links saved.</p>"; return; }
+  list.forEach(r=>{
+    box.innerHTML += `
+      <div class="resource-row">
+        <div>
+          <div style="font-weight:700">${escapeHtml(r.title)}</div>
+          <div class="subtle tiny">${escapeHtml(r.data)}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+          <a href="${escapeHtml(r.data)}" target="_blank" rel="noreferrer"><button class="btn-ghost">Open Link</button></a>
+          <button class="delete-btn" onclick="deleteLinkResource('${r.id}')">Delete</button>
+        </div>
+      </div>`;
+  });
+}
+
+/* Add resources */
+function addImageResource(){
+  const title=(document.getElementById("resourceImageTitle")||{}).value.trim();
+  const file=(document.getElementById("resourceImageFile")||{}).files[0];
+  if(!title) return alert("Please enter image title");
+  if(!file) return alert("Please select an image file");
+  const reader=new FileReader();
+  reader.onload=function(e){
+    const data=e.target.result;
+    const arr=getImages(); const id='img_'+Date.now();
+    arr.unshift({id,title,type:'image',data,created:Date.now()}); saveImages(arr);
+    logActivity(`Added image resource "${title}"`);
+    clearImageForm(); renderImages(); alert("Image saved");
+  };
+  reader.readAsDataURL(file);
+}
+function addPdfResource(){
+  const title=(document.getElementById("resourcePdfTitle")||{}).value.trim();
+  const file=(document.getElementById("resourcePdfFile")||{}).files[0];
+  if(!title) return alert("Please enter PDF title");
+  if(!file) return alert("Please select a PDF file");
+  const reader=new FileReader();
+  reader.onload=function(e){
+    const data=e.target.result;
+    const arr=getPdfs(); const id='pdf_'+Date.now();
+    arr.unshift({id,title,type:'pdf',data,created:Date.now()}); savePdfs(arr);
+    logActivity(`Added PDF resource "${title}"`);
+    clearPdfForm(); renderPdfs(); alert("PDF saved");
+  };
+  reader.readAsDataURL(file);
+}
+function addLinkResource(){
+  const title=(document.getElementById("resourceLinkTitle")||{}).value.trim();
+  const url=(document.getElementById("resourceLinkUrl")||{}).value.trim();
+  if(!title) return alert("Please enter link title");
+  if(!url) return alert("Please enter the URL");
+  const arr=getLinks(); const id='link_'+Date.now();
+  arr.unshift({id,title,type:'link',data:url,created:Date.now()}); saveLinks(arr);
+  logActivity(`Added link resource "${title}"`); clearLinkForm(); renderLinks(); alert("Link saved");
+}
+
+/* Delete resource functions */
+function deleteImageResource(id){ if(!confirm("Delete this image?")) return; let a=getImages(); const idx=a.findIndex(x=>x.id===id); if(idx===-1) return; const t=a[idx].title; a.splice(idx,1); saveImages(a); logActivity(`Deleted image "${t}"`); renderImages(); }
+function deletePdfResource(id){ if(!confirm("Delete this PDF?")) return; let a=getPdfs(); const idx=a.findIndex(x=>x.id===id); if(idx===-1) return; const t=a[idx].title; a.splice(idx,1); savePdfs(a); logActivity(`Deleted pdf "${t}"`); renderPdfs(); }
+function deleteLinkResource(id){ if(!confirm("Delete this link?")) return; let a=getLinks(); const idx=a.findIndex(x=>x.id===id); if(idx===-1) return; const t=a[idx].title; a.splice(idx,1); saveLinks(a); logActivity(`Deleted link "${t}"`); renderLinks(); }
+
+/* clear forms */
+function clearImageForm(){ (document.getElementById("resourceImageTitle")||{}).value=''; (document.getElementById("resourceImageFile")||{}).value=''; }
+function clearPdfForm(){ (document.getElementById("resourcePdfTitle")||{}).value=''; (document.getElementById("resourcePdfFile")||{}).value=''; }
+function clearLinkForm(){ (document.getElementById("resourceLinkTitle")||{}).value=''; (document.getElementById("resourceLinkUrl")||{}).value=''; }
+
+/* switch resource tabs and render */
+function switchResourcesTab(tab){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.res-panel').forEach(p=>p.style.display='none');
+  document.querySelector(`.tab[data-tab="${tab}"]`).classList.add('active');
+  document.getElementById('res_'+tab).style.display='block';
+  if(tab==='images') renderImages();
+  if(tab==='pdfs') renderPdfs();
+  if(tab==='links') renderLinks();
+}
+
+/* =========================
+   Chat (Admin <-> Agent)
+   ========================= */
+function getChat(){ return JSON.parse(localStorage.getItem("chat")||"[]"); }
+function saveChat(c){ localStorage.setItem("chat", JSON.stringify(c)); }
+let currentChatUser = null;
+
+function renderChatList(){
+  const users=getUsers(); const agents=users.filter(u=>u.role==='Agent');
+  const chats=getChat(); const chatList=document.getElementById("chatList"); chatList.innerHTML="";
+  agents.forEach(agent=>{
+    const msgs = chats.filter(m=>(m.from===agent.username && m.to==="Admin") || (m.from==="Admin" && m.to===agent.username));
+    const last = msgs.sort((a,b)=>b.time - a.time)[0];
+    const unread = chats.filter(m=>m.from===agent.username && m.to==="Admin" && !m.read).length;
+    chatList.innerHTML += `
+      <div class="chat-contact" onclick="openChat('${agent.username}')">
+        <div>
+          <strong>${escapeHtml(agent.username)}</strong><br>
+          <small class="subtle">${last ? (last.text.length>40?last.text.slice(0,40)+'...':last.text) : 'No messages yet'}</small>
+        </div>
+        <div style="text-align:right">
+          <div class="subtle tiny">${last ? new Date(last.time).toLocaleTimeString() : ''}</div>
+          ${unread>0?`<div style="margin-top:8px;"><span style="background:#ff3b30;color:white;padding:4px 8px;border-radius:20px;font-size:12px">${unread}</span></div>`:""}
+        </div>
+      </div>`;
+  });
+}
+
+function openChat(username){
+  currentChatUser = username;
+  document.getElementById("chatUserTitle").innerText = `Chat with ${username}`;
+  document.getElementById("chatBox").style.display = "block";
+  document.getElementById("chatBox").setAttribute("aria-hidden","false");
+  loadChatMessages();
+  // mark read
+  const chats=getChat(); let changed=false;
+  chats.forEach(m=>{ if(m.from===username && m.to==="Admin" && !m.read){ m.read=true; changed=true; }});
+  if(changed) saveChat(chats);
+  renderChatList(); checkNotifications();
+}
+function closeChat(){ currentChatUser=null; document.getElementById("chatBox").style.display="none"; document.getElementById("chatBox").setAttribute("aria-hidden","true"); }
+function loadChatMessages(){
+  if(!currentChatUser) return;
+  const chats=getChat();
+  const msgs=chats.filter(m=>(m.from===currentChatUser && m.to==="Admin") || (m.from==="Admin" && m.to===currentChatUser)).sort((a,b)=>a.time-b.time);
+  const area=document.getElementById("chatMessages"); area.innerHTML="";
+  msgs.forEach(m=>{
+    const who = (m.from==="Admin") ? "admin" : "agent";
+    area.innerHTML += `<div class="msg ${who}"><div class="bubble">${escapeHtml(m.text)}</div></div>`;
+  });
+  area.scrollTop = area.scrollHeight;
+}
+function sendChat(){
+  if(!currentChatUser) return alert("Open a chat first");
+  const text=(document.getElementById("chatInput")||{}).value.trim();
+  if(!text) return;
+  const chats=getChat(); chats.push({from:"Admin",to:currentChatUser,text, time: Date.now(), read:true});
+  saveChat(chats); document.getElementById("chatInput").value=""; loadChatMessages(); renderChatList(); logActivity(`Sent chat to ${currentChatUser}`); checkNotifications();
+}
+function broadcastTest(){
+  const users=getUsers(); const agents=users.filter(u=>u.role==='Agent' && u.status==='approved'); if(!agents.length) return alert("No approved agents");
+  const target=agents[Math.floor(Math.random()*agents.length)].username; const chats=getChat();
+  chats.push({from:target,to:"Admin",text:"Test ping from " + target, time: Date.now(), read:false}); saveChat(chats); logActivity(`Received test message from ${target}`); renderChatList(); checkNotifications();
+}
+function filterChatList(){
+  const q=(document.getElementById("searchAgentChat")||{}).value.toLowerCase()||"";
+  document.querySelectorAll('.chat-contact').forEach(c=>{
+    c.style.display = c.textContent.toLowerCase().includes(q) ? "" : "none";
+  });
+}
+
+/* =========================
+   Profile modal
+   ========================= */
+function openProfile(){
+  const p=JSON.parse(localStorage.getItem("profile")||"{}");
+  (document.getElementById("p_name")||{}).value=p.name||"";
+  (document.getElementById("p_email")||{}).value=p.email||"";
+  (document.getElementById("p_phone")||{}).value=p.phone||"";
+  (document.getElementById("p_role")||{}).value=p.role||"Admin";
+  (document.getElementById("p_bio")||{}).value=p.bio||"";
+  document.getElementById("profileBox").style.display="block"; document.getElementById("profileBox").setAttribute("aria-hidden","false");
+}
+function closeProfile(){ document.getElementById("profileBox").style.display="none"; document.getElementById("profileBox").setAttribute("aria-hidden","true"); }
+function saveProfile(){
+  const p={
+    name:(document.getElementById("p_name")||{}).value.trim(),
+    email:(document.getElementById("p_email")||{}).value.trim(),
+    phone:(document.getElementById("p_phone")||{}).value.trim(),
+    role:(document.getElementById("p_role")||{}).value.trim(),
+    bio:(document.getElementById("p_bio")||{}).value.trim()
+  };
+  localStorage.setItem("profile", JSON.stringify(p)); logActivity("Updated admin profile"); alert("Profile saved"); closeProfile();
+}
+
+/* =========================
+   Activity
+   ========================= */
+function renderActivity(){ const area=document.getElementById("activityLog"); const logs=JSON.parse(localStorage.getItem("activity")||"[]"); area.innerHTML=logs.map(l=>`<div style="padding:8px;border-bottom:1px solid #f0f3fb"><strong>${escapeHtml(l.text)}</strong><br><small class="subtle">${l.time}</small></div>`).join(""); }
+
+/* =========================
+   Agent dropdown + notifications + stats
+   ========================= */
+function loadAgentDropdown(){ const users=getUsers(); const dropdown=document.getElementById("msgTo"); if(!dropdown) return; dropdown.innerHTML=`<option value="all">All Agents</option>`; users.filter(u=>u.role==='Agent' && u.status==='approved').forEach(u=>{ dropdown.innerHTML += `<option value="${escapeHtml(u.username)}">${escapeHtml(u.username)}</option>`; }); }
+
+function checkNotifications(){
+  const users=getUsers(); const chats=getChat(); const pendingRequests=users.filter(u=>u.role==='RequestedAgent').length; const unread=chats.filter(m=>m.to==="Admin" && !m.read).length; const dot=document.getElementById("notifDot");
+  dot.style.display = (pendingRequests>0 || unread>0) ? "inline-block" : "none";
+}
+function updateStats(){ const users=getUsers(); const courses=getCourses(); document.getElementById("totalUsers").innerText = users.length; document.getElementById("approvedAgents").innerText = users.filter(u=>u.role==='Agent' && u.status==='approved').length; document.getElementById("totalCourses").innerText = courses.length; }
+
+/* =========================
+   Logout
+   ========================= */
+function logout(){
+  if(!confirm("Are you sure you want to logout?")) return;
+  localStorage.removeItem("profile"); localStorage.removeItem("loggedInUser");
+  document.body.style.transition = "opacity 0.35s ease"; document.body.style.opacity = "0";
+  setTimeout(()=>{ window.location.href = "index.html"; }, 350);
+}
+
+/* =========================
+   Init & Polling
+   ========================= */
+function initAll(){
+  loadUsers(); loadCourses(); loadAgentRequests(); renderChatList(); renderActivity(); loadAgentDropdown(); updateStats(); checkNotifications();
+  // default resource tab
+  switchResourcesTab('images');
+}
+document.addEventListener("DOMContentLoaded", initAll);
+setInterval(()=>{ loadUsers(); loadCourses(); loadAgentRequests(); renderChatList(); renderActivity(); loadAgentDropdown(); updateStats(); checkNotifications(); }, 2500);
+window.addEventListener("keydown", function(e){ if(e.key==='Escape'){ closeChat(); closeProfile(); }});
+
+/* storage sync across tabs */
+window.addEventListener('storage', function(e){
+  if(['users','courses','chat','activity','resources_images','resources_pdfs','resources_links'].includes(e.key)){
+    // refresh UI parts
+    loadUsers(); loadCourses(); loadAgentRequests(); renderChatList(); renderActivity(); switchResourcesTab(document.querySelector('.tab.active')?.dataset?.tab || 'images');
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login - Guidance Plus</title>
+
+<style>
+/* ============================
+   GLOBAL BACKGROUND
+============================ */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: "Poppins", sans-serif;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    background: url("https://images.unsplash.com/photo-1462331940025-496dfbfc7564?auto=format&fit=crop&w=1600&q=80")
+        no-repeat center center/cover;
+
+    position: relative;
+}
+
+/* Soft white smoke overlay */
+body::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    backdrop-filter: blur(3px);
+    background: rgba(0,0,0,0.45);
+    z-index: 0;
+}
+
+/* ============================
+   CARD WRAPPER
+============================ */
+.wrapper {
+    display: flex;
+    gap: 500px;
+    align-items: center;
+    z-index: 1;
+}
+
+/* ============================
+   LEFT PANEL (BRAND)
+============================ */
+.brand-box {
+    width: 420px;
+    height: 340px;
+    padding: 80px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #2b2b2b, #1a1a1a);
+    border: 1px solid rgba(232,197,122,0.35);
+    color: white;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+}
+
+.brand-logo {
+    width: 55px;
+    height: 55px;
+    background: #E8C57A;
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 700;
+    color: black;
+    margin-bottom: 12px;
+}
+
+.brand-box h1 {
+    margin: 0;
+    font-size: 26px;
+}
+
+.brand-box p {
+    opacity: 0.8;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* ============================
+   LOGIN CARD
+============================ */
+.card {
+    width: 800px;
+    padding: 165px 80px;
+    background: rgba(255,255,255,0.12);
+    border-radius: 20px;
+    backdrop-filter: blur(12px);
+    color: white;
+    border: 1px solid rgba(232,197,122,0.4);
+    box-shadow: 0px 10px 40px rgba(0,0,0,0.45);
+}
+
+/* Title */
+.card h2 {
+    margin: 0;
+    font-size: 46px;
+}
+
+.card small {
+    opacity: 0.8;
+}
+
+/* Input fields */
+.input {
+    width: 100%;
+    padding: 14px;
+    margin: 12px 0;
+    border-radius: 8px;
+    border: none;
+    background: rgba(255,255,255,0.85);
+    font-size: 15px;
+}
+
+/* Login Button */
+.login-btn {
+    width: 100%;
+    padding: 14px;
+    background: #E8C57A;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    color: black;
+    font-weight: 600;
+    font-size: 16px;
+}
+.login-btn:hover {
+    opacity: 0.9;
+}
+
+/* Links */
+a {
+    color: #E8C57A;
+    text-decoration: none;
+    font-weight: 600;
+}
+</style>
+</head>
+
+<body>
+
+<div class="wrapper">
+
+    <!-- LEFT BRAND PANEL -->
+    <div class="brand-box">
+        <div class="brand-logo">GP</div>
+
+        <h1>Guidance Plus</h1>
+        <p>Welcome back — Sign in to manage courses, agent activity, and more.<br><br>
+        <span style="color:#E8C57A;">Premium interface • Soft-gold accents • Easy-to-use</span></p>
+    </div>
+
+    <!-- LOGIN CARD -->
+    <div class="card">
+        <h2>Sign In</h2>
+        <small>Enter your credentials to continue.</small>
+
+        <input id="username" class="input" placeholder="Username">
+        <input id="password" class="input" type="password" placeholder="Password">
+
+        <button class="login-btn" onclick="loginUser()">SIGN IN</button>
+
+        <p style="margin-top:15px;">
+            Don't have an account?
+            <a href="regester.html">Register</a>
+        </p>
+    </div>
+</div>
+
+<script>
+/* Create default admin */
+(function(){
+    let users = JSON.parse(localStorage.getItem("users")) || [];
+    if (!users.some(u=>u.role==="Admin")) {
+        users.push({username:"admin",password:"admin123",role:"Admin",status:"approved"});
+        localStorage.setItem("users", JSON.stringify(users));
+    }
+})();
+
+function loginUser() {
+    let username = document.getElementById("username").value.trim();
+    let password = document.getElementById("password").value.trim();
+
+    let users = JSON.parse(localStorage.getItem("users")) || [];
+    let found = users.find(u => u.username === username && u.password === password);
+
+    if (!found) return alert("Invalid username or password");
+    if (found.status !== "approved") return alert("Admin approval needed");
+
+    // STORE LOGIN SESSION - THIS IS THE FIX
+    localStorage.setItem("loggedInUser", username);
+
+    if (found.role === "Admin") window.location.href = "admin.html";
+    else if (found.role === "Agent") window.location.href = "agent.html";
+}
+</script>
+
+</body>
+</html>

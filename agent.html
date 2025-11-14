@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Agent Dashboard — Guidance Plus</title>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+  :root{
+    --bg:#eef1ff;--card:#fff;--accent:#4c3fff;
+    --txt:#111;--muted:#6b7280;
+  }
+  [data-theme="dark"]{
+    --bg:#0f1724;--card:#152235;
+    --accent:#7b66ff;--txt:#eef3ff;--muted:#8996b4;
+  }
+
+  *{box-sizing:border-box;font-family:Poppins}
+
+  body{
+    margin:0;background:var(--bg);color:var(--txt);
+  }
+
+  .navbar{
+    height:70px;background:var(--card);
+    display:flex;justify-content:space-between;align-items:center;
+    padding:0 20px;box-shadow:0 2px 10px rgba(0,0,0,0.1);
+  }
+  .container{
+    max-width:1200px;margin:20px auto;padding:10px;
+  }
+
+  .card{
+    background:var(--card);padding:18px;border-radius:12px;
+    margin-bottom:20px;box-shadow:0 6px 18px rgba(0,0,0,0.1);
+  }
+
+  h2{margin:0 0 10px 0}
+
+  /* Tabs */
+  .tabs{display:flex;gap:10px;margin-bottom:12px}
+  .tab{
+    padding:8px 14px;background:#d6dbff;color:#333;
+    border-radius:10px;font-weight:600;cursor:pointer;
+  }
+  .tab.active{background:var(--accent);color:#fff}
+
+  /* Resource card */
+  .resource-card{
+    display:flex;gap:14px;
+    background:var(--card);padding:12px;border-radius:10px;
+    border:1px solid #d9dfff;margin-bottom:10px;
+    align-items:center;
+  }
+  .thumb{
+    width:80px;height:70px;object-fit:cover;border-radius:8px;
+    border:1px solid #ccd1ff;
+  }
+  .small{color:var(--muted);font-size:13px}
+
+  .btn{
+    padding:6px 12px;background:var(--accent);color:#fff;
+    border-radius:8px;border:none;cursor:pointer;
+  }
+  .btn-red{background:#ff4c4c}
+</style>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<div class="navbar">
+  <h3>Guidance Plus — Agent Dashboard</h3>
+  <div>
+    <button id="themeToggle" class="btn">Theme</button>
+    <button onclick="logout()" class="btn-red">Logout</button>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- COURSES -->
+  <div class="card">
+    <h2>📘 Courses</h2>
+    <div id="coursesBox"></div>
+  </div>
+
+  <!-- RESOURCES -->
+  <div class="card">
+    <h2>📚 Resources</h2>
+
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('img')" data-tab="img">Images</div>
+      <div class="tab" onclick="switchTab('pdf')" data-tab="pdf">PDFs</div>
+      <div class="tab" onclick="switchTab('link')" data-tab="link">Links</div>
+    </div>
+
+    <input id="searchRes" onkeyup="renderResources()" placeholder="Search..."
+      style="width:100%;padding:10px;border:1px solid #d1d4ff;border-radius:10px;margin-bottom:12px;">
+
+    <div id="resourceBox"></div>
+  </div>
+
+  <!-- MESSAGES -->
+  <div class="card">
+    <h2>📨 Messages from Admin</h2>
+    <div id="msgBox"></div>
+  </div>
+
+</div>
+
+<script>
+/* THEME */
+(function(){
+  const t = localStorage.getItem("theme") || "light";
+  document.documentElement.setAttribute("data-theme", t);
+
+  document.getElementById("themeToggle").onclick = ()=>{
+    const newT = (document.documentElement.getAttribute("data-theme")==="dark")?"light":"dark";
+    document.documentElement.setAttribute("data-theme", newT);
+    localStorage.setItem("theme", newT);
+  };
+})();
+
+/* STORAGE HELPERS */
+const getUsers  = ()=> JSON.parse(localStorage.getItem('users')||"[]");
+const getCourses= ()=> JSON.parse(localStorage.getItem('courses')||"[]");
+const getMsgs   = ()=> JSON.parse(localStorage.getItem('messages')||"[]");
+
+const getImages = ()=> JSON.parse(localStorage.getItem("resources_images")||"[]");
+const getPdfs   = ()=> JSON.parse(localStorage.getItem("resources_pdfs")||"[]");
+const getLinks  = ()=> JSON.parse(localStorage.getItem("resources_links")||"[]");
+
+let currentTab = "img";
+
+/* FIX MIME TYPE */
+function normalizeDataUrl(raw, fallback){
+  if(!raw.startsWith("data:")){
+    return `data:${fallback};base64,${raw}`;
+  }
+  return raw;
+}
+
+/* OPEN FILE SAFELY */
+function openResource(rawUrl, type){
+  const url = normalizeDataUrl(rawUrl, type==="PDF"?"application/pdf":"image/png");
+
+  if(url.startsWith("http")){
+    window.open(url, "_blank");
+    return;
+  }
+
+  const parts = url.split(",");
+  const mime = parts[0].match(/:(.*?);/)[1];
+  const b64  = atob(parts[1]);
+
+  const u8 = new Uint8Array(b64.length);
+  for(let i=0;i<b64.length;i++) u8[i] = b64.charCodeAt(i);
+
+  const blob = new Blob([u8], { type: mime });
+  const blobUrl = URL.createObjectURL(blob);
+  window.open(blobUrl, "_blank");
+}
+
+/* DOWNLOAD FILE */
+function downloadResource(ev, rawUrl, title, type){
+  ev.preventDefault();
+
+  const url = normalizeDataUrl(rawUrl, type==="PDF"?"application/pdf":"image/png");
+
+  const arr = url.split(",");
+  const mime = arr[0].match(/:(.*?);/)[1];
+  const b64 = atob(arr[1]);
+
+  const u8 = new Uint8Array(b64.length);
+  for(let i=0;i<b64.length;i++) u8[i]=b64.charCodeAt(i);
+
+  const blob = new Blob([u8], {type:mime});
+  const blobUrl = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = blobUrl;
+  a.download = (title || "file") + (type==="PDF"?".pdf":".png");
+  a.click();
+}
+
+/* SWITCH TAB */
+function switchTab(t){
+  currentTab = t;
+  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+  document.querySelector(`.tab[data-tab="${t}"]`).classList.add("active");
+  renderResources();
+}
+
+/* CURRENT USER */
+function currentUser(){
+  let cu = sessionStorage.getItem("currentUser");
+  if(cu) return cu;
+  const ok = getUsers().find(x=>x.role==="Agent" && x.status==="approved");
+  return ok ? ok.username : null;
+}
+
+/* RENDER COURSES */
+function renderCourses(){
+  const list = getCourses();
+  const box = document.getElementById("coursesBox");
+
+  if(!list.length){
+    box.innerHTML = "<p class='small'>No courses available.</p>";
+    return;
+  }
+
+  box.innerHTML = list.map(c=>`
+    <div style="padding:12px;border-bottom:1px solid #e3e4f7;">
+      <b>${c.title}</b><br>
+      <span class="small">${c.course}</span><br>
+      <span class="small">Ref: ${c.reference_book}</span><br>
+      <a href="${c.link}" target="_blank">Open</a>
+    </div>
+  `).join("");
+}
+
+/* RENDER RESOURCES */
+function renderResources(){
+  let data = [];
+
+  if(currentTab==="img") data = getImages().map(x=>({title:x.title,url:x.data,type:"Image",thumb:x.data}));
+  if(currentTab==="pdf") data = getPdfs().map(x=>({title:x.title,url:x.data,type:"PDF"}));
+  if(currentTab==="link") data = getLinks().map(x=>({title:x.title,url:x.data,type:"Link"}));
+
+  const q = (document.getElementById("searchRes").value || "").toLowerCase();
+  data = data.filter(x => x.title.toLowerCase().includes(q));
+
+  const box = document.getElementById("resourceBox");
+
+  if(!data.length){
+    box.innerHTML = "<p class='small'>No resources found.</p>";
+    return;
+  }
+
+  box.innerHTML = data.map(r=>`
+    <div class="resource-card">
+      ${r.thumb?`<img src="${r.thumb}" class="thumb">`:""}
+      <div style="flex:1;">
+        <b>${r.title}</b><br>
+        <span class="small">${r.type}</span>
+      </div>
+
+      <button class="btn" onclick="openResource('${r.url}','${r.type}')">Open</button>
+      <button class="btn" onclick="downloadResource(event,'${r.url}','${r.title}','${r.type}')">Download</button>
+    </div>
+  `).join("");
+}
+
+/* MESSAGES */
+function renderMessages(){
+  const user = currentUser();
+  const msgs = getMsgs().filter(m=>m.to==="all"||m.to===user);
+
+  const box = document.getElementById("msgBox");
+
+  if(!msgs.length){
+    box.innerHTML = "<p class='small'>No messages.</p>";
+    return;
+  }
+
+  box.innerHTML = msgs.map(m=>`
+    <div style="padding:10px;border-bottom:1px solid #e3e3f7">
+      <b>Admin</b> — <span class="small">${new Date(m.time).toLocaleString()}</span>
+      <div>${m.text}</div>
+    </div>
+  `).join("");
+}
+
+/* LOGOUT */
+function logout(){
+  sessionStorage.removeItem("currentUser");
+  location.href="index.html";
+}
+
+/* INIT */
+renderCourses();
+renderResources();
+renderMessages();
+
+</script>
+
+</body>
+</html>
